@@ -1,23 +1,39 @@
 package es.unizar.urlshortener.infrastructure.delivery
 
+import es.unizar.urlshortener.core.ClickProperties
+import es.unizar.urlshortener.core.ShortUrlProperties
 import es.unizar.urlshortener.core.usecases.CreateCsvShortUrlUseCase
 import es.unizar.urlshortener.core.usecases.CreateShortUrlUseCase
-import org.springframework.context.ApplicationListener
-import org.springframework.context.event.ContextRefreshedEvent
+import es.unizar.urlshortener.core.usecases.LogClickUseCase
+import es.unizar.urlshortener.core.usecases.RedirectUseCase
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.Resource
+import org.springframework.hateoas.server.mvc.linkTo
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping
+import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.socket.config.annotation.EnableWebSocket
+import org.springframework.web.socket.server.standard.ServerEndpointExporter
+import java.net.URI
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import javax.servlet.http.HttpServletRequest
 import javax.websocket.*
-import javax.websocket.server.ServerEndpointConfig
+import javax.websocket.server.ServerEndpoint
 
 
 /**
  * The specification of the controller.
  */
 interface UrlCsvShortenerController {
+
+    fun redirectCsvTo(id: String, remoteAddr: String): ResponseEntity<Void>
     /**
      * Recieves a CSV file with URIs to shorten.
      *
@@ -36,14 +52,25 @@ interface UrlCsvShortenerController {
  */
 @RestController
 class UrlCsvShortenerControllerImpl(
+    val redirectUseCase: RedirectUseCase,
+    val logClickUseCase: LogClickUseCase,
     val createCsvShortUrlUseCase: CreateCsvShortUrlUseCase,
     val createShortUrlUseCase: CreateShortUrlUseCase
 ) : UrlCsvShortenerController {
 
+    @GetMapping("/tiny-")
+    override fun redirectCsvTo(@PathVariable id: String, remoteAddr: String): ResponseEntity<Void> =
+        redirectUseCase.redirectTo(id).let {
+            logClickUseCase.logClick(id, ClickProperties(ip = remoteAddr))
+            val h = HttpHeaders()
+            h.location = URI.create(it.target)
+            //println("redirecttttt")
+            ResponseEntity<Void>(h, HttpStatus.valueOf(it.mode))
+        }
+
     @PostMapping("/csv")
     override fun handleCsvUpload(request: HttpServletRequest): ResponseEntity<String> {
         // Abrir servidor WebSockets
-        ServerEndpointConfig.Builder.create(CsvEndpoint::class.java, "/csv/progress").build()
         return ResponseEntity<String>("Servidor WebSockets esperando... ", HttpStatus.ACCEPTED)
     }
 }

@@ -15,8 +15,6 @@ import es.unizar.urlshortener.infrastructure.repositories.ShortUrlRepositoryServ
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.web.socket.config.annotation.EnableWebSocket
-import org.springframework.web.socket.server.standard.ServerEndpointExporter
 
 /**
  * Wires use cases with service implementations, and services implementations with repositories.
@@ -24,7 +22,6 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter
  * **Note**: Spring Boot is able to discover this [Configuration] without further configuration.
  */
 @Configuration
-@EnableWebSocket
 class ApplicationConfiguration(
     @Autowired val shortUrlEntityRepository: ShortUrlEntityRepository,
     @Autowired val clickEntityRepository: ClickEntityRepository
@@ -58,7 +55,4 @@ class ApplicationConfiguration(
 
     @Bean
     fun createCsvShortUrlUseCase() = CreateCsvShortUrlUseCaseImpl(createShortUrlUseCase(), redirectUseCase())
-
-    @Bean
-    fun serverEndpoint() = ServerEndpointExporter()
 }

@@ -59,8 +59,6 @@ project(":delivery") {
         "implementation"("com.google.guava:guava:23.0")
         "implementation"("io.github.g0dkar:qrcode-kotlin:1.1.0")
         "implementation"("org.springframework.boot:spring-boot-starter-websocket")
-        "implementation"("jakarta.inject:jakarta.inject-api:1.0.3")
-        "implementation"("org.springframework.boot:spring-boot-starter-actuator:2.6.1")
 
         "testImplementation"("org.springframework.boot:spring-boot-starter-test")
         "testImplementation"("org.mockito.kotlin:mockito-kotlin:3.2.0")
@@ -81,7 +79,6 @@ project(":app") {
         "implementation"("org.springframework.boot:spring-boot-starter")
         "implementation"( "org.webjars:bootstrap:3.3.5")
         "implementation"("org.webjars:jquery:2.1.4")
-        "implementation"("org.springframework.boot:spring-boot-starter-websocket")
 
         "runtimeOnly"("org.hsqldb:hsqldb")
 
